@@ -1,0 +1,19 @@
+{
+  "name": "vocab-trainer",
+  "version": "1.0.0",
+  "description": "Small and minimalist vocab trainer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syentix/vocab-trainer.git"
+  },
+  "author": "Ole S. & Jonas W.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syentix/vocab-trainer/issues"
+  },
+  "homepage": "https://github.com/syentix/vocab-trainer#readme"
+}
