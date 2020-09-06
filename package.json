@@ -4,7 +4,7 @@
   "description": "Small and minimalist vocab trainer.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "backend_start": "nodemon backend/index.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,15 @@
   "bugs": {
     "url": "https://github.com/syentix/vocab-trainer/issues"
   },
-  "homepage": "https://github.com/syentix/vocab-trainer#readme"
+  "homepage": "https://github.com/syentix/vocab-trainer#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-validator": "^6.6.1",
+    "mongoose": "^5.10.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
 }
