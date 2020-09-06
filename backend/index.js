@@ -13,6 +13,8 @@ bodyParser.urlencoded({
   extended: true,
 });
 
+app.use(express.json());
+
 // ────────────────────────────────────────────────────────────────────────────────
 
 // Connecting to the Database

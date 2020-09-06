@@ -1,16 +1,21 @@
 const router = require('express').Router();
-const { body, validationResult } = require('express-validator');
+const { check, validationResult } = require('express-validator');
 
 //
 // ─── BRING IN THE SCHEMAS ──────────────────────────────────────────────────────
 //
 
 const Lesson = require('../models/lesson');
+const wordSchema = require('../models/word');
 
 // ────────────────────────────────────────────────────────────────────────────────
 
-router.get('/', (_, res) => {
-  Lesson.find({}, (err, lessons) => {
+//
+// ─── GET ALL LESSONS ────────────────────────────────────────────────────────────
+//
+
+router.get('/', async (_, res) => {
+  await Lesson.find({}, (err, lessons) => {
     if (err) {
       console.log(err);
       res.status(500).json({
@@ -26,8 +31,12 @@ router.get('/', (_, res) => {
   });
 });
 
-router.get('/:title', (req, res) => {
-  Lesson.findOne({ title: req.params.title }, (err, lesson) => {
+//
+// ─── GET THE LESSON WITH GIVEN TITLE ────────────────────────────────────────────
+//
+
+router.get('/:title', async (req, res) => {
+  await Lesson.findOne({ title: req.params.title }, (err, lesson) => {
     if (err) {
       console.log(err);
       res.status(500).json({
@@ -49,6 +58,85 @@ router.get('/:title', (req, res) => {
   });
 });
 
-router.post('/', (req, res) => {});
+//
+// ─── ENDPOINT FOR CREATING NEW LESSONS ────────────────────────────────
+//
+
+router.post(
+  '/',
+  [
+    check('title')
+      .notEmpty()
+      .withMessage("Title can't be empty.")
+      .trim()
+      .escape(),
+    check('difficulty').isInt(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    } else {
+      // Check if title already exists
+      await Lesson.findOne({ title: req.body.title }, (err, lesson) => {
+        // Typical Error handling
+        if (err) {
+          res.status(500).send('Something is wrong...');
+        }
+        // If we get a result --> We already have that title
+        else if (lesson) {
+          res.status(400).json({
+            success: false,
+            msg: 'This name has already been taken.',
+          });
+        }
+        // Go on with saving the Object :)
+        else {
+          const lesson = new Lesson({
+            title: req.body.title,
+            difficulty: req.body.difficulty,
+          });
+          lesson.save((err, product) => {
+            if (err) {
+              res.status(500).json({ success: false, errors: err });
+            } else {
+              res.status(200).json({
+                success: true,
+                msg: 'Created new lesson 🍾',
+                lesson: product,
+              });
+            }
+          });
+        }
+      });
+    }
+  },
+);
+
+//
+// ─── UPDATE LESSON ──────────────────────────────────────────────────────────────
+//
+
+router.put('/:title', async (req, res) => {
+  await Lesson.updateOne(
+    { title: req.params.title },
+    { title: req.body.title, difficulty: req.body.difficulty },
+    (err) => {
+      if (err) {
+        res.status(400).send("That's no good 😞");
+      } else {
+        res.status(200).json({
+          success: true,
+          msg: 'Updated Document 🔧',
+        });
+      }
+    },
+  );
+});
+
+// ────────────────────────────────────────────────────────────────────────────────
 
 module.exports = router;
