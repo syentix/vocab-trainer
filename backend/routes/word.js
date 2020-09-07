@@ -8,14 +8,13 @@ const { check, validationResult } = require('express-validator');
 //
 
 const Lesson = require('../models/lesson');
-const wordSchema = require('../models/word');
 
 //
 // ─── GET ALL VOCAB FROM GIVEN LESSON ────────────────────────────────────────────
 //
 
 router.get('/:lesson', async (req, res) => {
-  await Lesson.find({ title: req.params.lesson }, (err, lesson) => {
+  await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
     if (err) {
       res.status(400).json({
         success: false,
@@ -30,11 +29,16 @@ router.get('/:lesson', async (req, res) => {
   });
 });
 
+//
+// ─── ADDED CREATE ROUTE FOR WORDS IN A LESSON ───────────────────────────────────
+//
+
 router.post(
   '/:lesson',
   [
-    check('romaji').notEmpty().isString(),
+    check('japanese').notEmpty().isString(),
     check('english').notEmpty().isString(),
+    check('katakana').isBoolean(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -44,14 +48,67 @@ router.post(
         errors: errors.array(),
       });
     } else {
-      const romaji = req.body.romaji;
+      const japanese = req.body.japanese;
       const english = req.body.english;
-      const hiragana = hepburn.toHiragana(romaji);
-      if (req.body.katakana == true) {
-        const katakana = hepburn.toKatakana;
+      let hiragana, katakana, romaji;
+      if (hepburn.containsKana(japanese)) {
+        romaji = hepburn.fromKana(japanese);
+        if (hepburn.containsHiragana(japanese)) {
+          hiragana = japanese;
+        } else {
+          katakana = japanese;
+        }
+      } else {
+        romaji = japanese;
+        if (req.body.katakana == true) {
+          katakana = hepburn.toKatakana(japanese);
+        } else {
+          hiragana = hepburn.toHiragana(japanese);
+        }
       }
+
+      await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
+        // Check for error.
+        if (err) {
+          res.status(400).json({
+            success: false,
+            msg: 'No a valid lesson.',
+          });
+        }
+
+        // Creating the new Subdocument
+        const newWord = {
+          isKatakana: req.body.katakana,
+          hiragana,
+          katakana,
+          romaji,
+          english,
+          lesson: lesson._id,
+        };
+
+        // Push to the Subdoc Array => vocab
+        lesson.vocab.push(newWord);
+
+        // Saving and sending response.
+        lesson.save((err, lesson) => {
+          if (err) {
+            res.status(500).json({
+              success: false,
+              message: "Something went wrong, maybe it's 🔥 somewhere.",
+            });
+          } else {
+            res.status(200).json({
+              success: true,
+              msg: 'That worked quite well 👍',
+              lesson,
+            });
+          }
+        });
+      });
     }
   },
 );
+
+router.put('/:lesson', [check('fields').isArray()], async (req, res) => {});
 
 module.exports = router;
