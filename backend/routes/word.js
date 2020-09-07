@@ -3,6 +3,8 @@ const hepburn = require('hepburn');
 
 const { check, validationResult } = require('express-validator');
 
+const { resErrorMongo, resNoLessonFound } = require('./lib/responses');
+
 //
 // ─── ADD ALL NEEDED SCHEMAS AND MODELS ──────────────────────────────────────────
 //
@@ -17,15 +19,9 @@ const { ObjectId } = require('mongoose').Types;
 router.get('/:lesson', async (req, res) => {
   await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
     if (!lesson) {
-      res.status(400).json({
-        success: false,
-        msg: "This lesson doesn't exist. 😞",
-      });
+      resNoLessonFound(res);
     } else if (err) {
-      res.status(500).json({
-        success: false,
-        msg: 'We are royally f*cked.',
-      });
+      resErrorMongo(res);
     } else {
       res.status(200).json({
         success: true,
@@ -76,45 +72,36 @@ router.post(
       await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
         // Check for error.
         if (!lesson) {
-          res.status(400).json({
-            success: false,
-            msg: 'No a valid lesson.',
-          });
+          resNoLessonFound(res);
         } else if (err) {
-          res.status(500).json({
-            success: false,
-            message: "Something went wrong, maybe it's 🔥 somewhere.",
+          resErrorMongo(res);
+        } else {
+          // Creating the new Subdocument
+          const newWord = {
+            isKatakana: req.body.katakana,
+            hiragana,
+            katakana,
+            romaji,
+            english,
+            lesson: lesson._id,
+          };
+
+          // Push to the Subdoc Array => vocab
+          lesson.vocab.push(newWord);
+
+          // Saving and sending response.
+          lesson.save((err, lesson) => {
+            if (err) {
+              resErrorMongo(res);
+            } else {
+              res.status(200).json({
+                success: true,
+                msg: 'That worked quite well 👍',
+                lesson,
+              });
+            }
           });
         }
-
-        // Creating the new Subdocument
-        const newWord = {
-          isKatakana: req.body.katakana,
-          hiragana,
-          katakana,
-          romaji,
-          english,
-          lesson: lesson._id,
-        };
-
-        // Push to the Subdoc Array => vocab
-        lesson.vocab.push(newWord);
-
-        // Saving and sending response.
-        lesson.save((err, lesson) => {
-          if (err) {
-            res.status(500).json({
-              success: false,
-              message: "Something went wrong, maybe it's 🔥 somewhere.",
-            });
-          } else {
-            res.status(200).json({
-              success: true,
-              msg: 'That worked quite well 👍',
-              lesson,
-            });
-          }
-        });
       });
     }
   },
@@ -124,6 +111,11 @@ router.post(
 // ─── UPDATE A WORD IN A LESSON PUT ──────────────────────────────────────────────
 //
 
-router.put('/:lesson', async (req, res) => {});
+router.put('/:lesson', async (req, res) => {
+  await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
+    if (!lesson) {
+    }
+  });
+});
 
 module.exports = router;

@@ -1,12 +1,13 @@
 const router = require('express').Router();
 const { check, validationResult } = require('express-validator');
 
+const { resErrorMongo, resNoLessonFound } = require('./lib/responses');
+
 //
 // ─── BRING IN THE SCHEMAS ──────────────────────────────────────────────────────
 //
 
 const Lesson = require('../models/lesson');
-const wordSchema = require('../models/word');
 
 // ────────────────────────────────────────────────────────────────────────────────
 
@@ -17,11 +18,7 @@ const wordSchema = require('../models/word');
 router.get('/', async (_, res) => {
   await Lesson.find({}, (err, lessons) => {
     if (err) {
-      console.log(err);
-      res.status(500).json({
-        success: false,
-        message: "Something didn't go well. Try again later.",
-      });
+      resErrorMongo(res);
     } else {
       res.status(200).json({
         success: true,
@@ -38,17 +35,10 @@ router.get('/', async (_, res) => {
 router.get('/:title', async (req, res) => {
   await Lesson.findOne({ title: req.params.title }, (err, lesson) => {
     if (err) {
-      console.log(err);
-      res.status(500).json({
-        success: false,
-        message: "Something went wrong, maybe it's 🔥 somewhere.",
-      });
+      resErrorMongo(res);
     }
     if (!lesson) {
-      res.status(400).json({
-        success: false,
-        message: "That's a non-existent lesson you got there. 😕",
-      });
+      resNoLessonFound(res);
     } else {
       res.status(200).json({
         success: true,
@@ -84,11 +74,11 @@ router.post(
       await Lesson.findOne({ title: req.body.title }, (err, lesson) => {
         // Typical Error handling
         if (err) {
-          res.status(500).send('Something is wrong...');
+          resErrorMongo(res);
         }
         // If we get a result --> We already have that title
         else if (lesson) {
-          res.status(400).json({
+          res.status(409).json({
             success: false,
             msg: 'This name has already been taken.',
           });
@@ -101,7 +91,7 @@ router.post(
           });
           lesson.save((err, product) => {
             if (err) {
-              res.status(500).json({ success: false, errors: err });
+              resErrorMongo(res);
             } else {
               res.status(200).json({
                 success: true,
@@ -126,12 +116,9 @@ router.put('/:title', async (req, res) => {
     { title: req.body.title, difficulty: req.body.difficulty },
     (err, raw) => {
       if (err) {
-        res.status(500).send("That's no good 😞");
+        resErrorMongo(res);
       } else if (raw.nModified == 0) {
-        res.status(400).json({
-          success: false,
-          msg: 'Non-existent lesson. ',
-        });
+        resNoLessonFound(res);
       } else {
         res.status(200).json({
           success: true,
