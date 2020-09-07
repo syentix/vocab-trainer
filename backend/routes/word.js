@@ -36,7 +36,7 @@ router.get('/:lesson', async (req, res) => {
 });
 
 //
-// ─── ADDED CREATE ROUTE FOR WORDS IN A LESSON ───────────────────────────────────
+// ─── CREATE ROUTE FOR WORDS IN A LESSON ───────────────────────────────────
 //
 
 router.post(
@@ -119,6 +119,10 @@ router.post(
     }
   },
 );
+
+//
+// ─── UPDATE A WORD IN A LESSON PUT ──────────────────────────────────────────────
+//
 
 router.put('/:lesson', async (req, res) => {});
 
