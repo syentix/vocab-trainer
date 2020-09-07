@@ -52,7 +52,12 @@ router.post(
     } else {
       const japanese = req.body.japanese;
       const english = req.body.english;
+
+      // Declare our variables, that will be filled in.
       let hiragana, katakana, romaji;
+
+      // Check if our japanese input is Kana
+      // yes => convert to romaji fill in hiragana OR katakana
       if (hepburn.containsKana(japanese)) {
         romaji = hepburn.fromKana(japanese);
         if (hepburn.containsHiragana(japanese)) {
@@ -60,7 +65,10 @@ router.post(
         } else {
           katakana = japanese;
         }
-      } else {
+      }
+
+      // no => japanese is romaji convert to hiragana or katakana (if selected)
+      else {
         romaji = japanese;
         if (req.body.katakana == true) {
           katakana = hepburn.toKatakana(japanese);
@@ -97,7 +105,7 @@ router.post(
               res.status(200).json({
                 success: true,
                 msg: 'That worked quite well 👍',
-                lesson,
+                payload: newWord,
               });
             }
           });
@@ -108,14 +116,35 @@ router.post(
 );
 
 //
-// ─── UPDATE A WORD IN A LESSON PUT ──────────────────────────────────────────────
+// ─── UPDATE A WORD IN A LESSON ──────────────────────────────────────────────
 //
 
 router.put('/:lesson', async (req, res) => {
   await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
-    if (!lesson) {
+    if (!lesson) resNoLessonFound(res);
+    else if (err) resErrorMongo(res);
+    else {
+      // Getting the subdocument from the given _id
+      let word = lesson.vocab.id(ObjectId(req.body._id));
+
+      // Updating the values
+      word.set(req.body.data);
+
+      // Saving and responding.
+      lesson.save((err, word) => {
+        if (err) resErrorMongo(res);
+        else {
+          res.status(200).json({
+            success: true,
+            msg: 'Word has been updated :)',
+            word,
+          });
+        }
+      });
     }
   });
 });
+
+// TODO: Create Delete Route for words
 
 module.exports = router;

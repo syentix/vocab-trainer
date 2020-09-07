@@ -129,6 +129,8 @@ router.put('/:title', async (req, res) => {
   );
 });
 
+// TODO: Create DELETE route for lessons
+
 // ────────────────────────────────────────────────────────────────────────────────
 
 module.exports = router;
