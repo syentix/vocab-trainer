@@ -124,9 +124,14 @@ router.put('/:title', async (req, res) => {
   await Lesson.updateOne(
     { title: req.params.title },
     { title: req.body.title, difficulty: req.body.difficulty },
-    (err) => {
+    (err, raw) => {
       if (err) {
-        res.status(400).send("That's no good 😞");
+        res.status(500).send("That's no good 😞");
+      } else if (raw.nModified == 0) {
+        res.status(400).json({
+          success: false,
+          msg: 'Non-existent lesson. ',
+        });
       } else {
         res.status(200).json({
           success: true,

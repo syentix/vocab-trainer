@@ -8,6 +8,7 @@ const { check, validationResult } = require('express-validator');
 //
 
 const Lesson = require('../models/lesson');
+const { ObjectId } = require('mongoose').Types;
 
 //
 // ─── GET ALL VOCAB FROM GIVEN LESSON ────────────────────────────────────────────
@@ -15,10 +16,15 @@ const Lesson = require('../models/lesson');
 
 router.get('/:lesson', async (req, res) => {
   await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
-    if (err) {
+    if (!lesson) {
       res.status(400).json({
         success: false,
         msg: "This lesson doesn't exist. 😞",
+      });
+    } else if (err) {
+      res.status(500).json({
+        success: false,
+        msg: 'We are royally f*cked.',
       });
     } else {
       res.status(200).json({
@@ -69,10 +75,15 @@ router.post(
 
       await Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
         // Check for error.
-        if (err) {
+        if (!lesson) {
           res.status(400).json({
             success: false,
             msg: 'No a valid lesson.',
+          });
+        } else if (err) {
+          res.status(500).json({
+            success: false,
+            message: "Something went wrong, maybe it's 🔥 somewhere.",
           });
         }
 
@@ -109,6 +120,6 @@ router.post(
   },
 );
 
-router.put('/:lesson', [check('fields').isArray()], async (req, res) => {});
+router.put('/:lesson', async (req, res) => {});
 
 module.exports = router;
