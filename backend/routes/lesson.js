@@ -129,7 +129,25 @@ router.put('/:title', async (req, res) => {
   );
 });
 
-// TODO: Create DELETE route for lessons
+//
+// ─── DELETE A LESSON ────────────────────────────────────────────────────────────
+//
+
+router.delete('/:lesson', (req, res) => {
+  Lesson.findOneAndDelete({ title: req.params.lesson }, (err, doc) => {
+    if (!doc) {
+      resNoLessonFound(res);
+    } else if (err) {
+      resErrorMongo(res);
+    } else {
+      res.status(200).json({
+        success: true,
+        msg: 'Lesson has been successfully removed!',
+        doc,
+      });
+    }
+  });
+});
 
 // ────────────────────────────────────────────────────────────────────────────────
 

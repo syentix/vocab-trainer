@@ -12,6 +12,12 @@ const { resErrorMongo, resNoLessonFound } = require('./lib/responses');
 const Lesson = require('../models/lesson');
 const { ObjectId } = require('mongoose').Types;
 
+const checkErrors = (err, lesson, res) => {
+  if (!lesson) resNoLessonFound(res);
+  if (err) resErrorMongo(res);
+  return;
+};
+
 //
 // ─── GET ALL VOCAB FROM GIVEN LESSON ────────────────────────────────────────────
 //
@@ -145,6 +151,32 @@ router.put('/:lesson', async (req, res) => {
   });
 });
 
-// TODO: Create Delete Route for words
+//
+// ─── DELETE A WORD IN A LESSON ──────────────────────────────────────────────────
+//
+
+router.delete('/:lesson', (req, res) => {
+  Lesson.findOne({ title: req.params.lesson }, (err, lesson) => {
+    checkErrors(err, lesson, res);
+    const word = lesson.vocab.id(ObjectId(req.body._id)).remove();
+    lesson.save((err, lesson) => {
+      checkErrors(err, lesson, res);
+      if (!word) {
+        res.status(400).json({
+          success: false,
+          msg: 'No word found 🔍',
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          msg: 'Word has been successfully deleted.',
+          removed: word,
+        });
+      }
+    });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────────
 
 module.exports = router;
