@@ -1,0 +1,17 @@
+@import '../styles.scss';
+
+.navbar {
+  padding: 2em;
+  background-color: $header-color;
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 5px 15px 5px 15px;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  text-decoration: none;
+  color: white;
+  background-color: black;
+}

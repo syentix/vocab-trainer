@@ -1,0 +1,17 @@
+@import '../styles.scss';
+
+.card {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  width: 10%;
+  padding: 5px;
+  margin: 1rem 0 0 1rem;
+  background-color: $card-color;
+}
+
+.shadow-card {
+  -webkit-box-shadow: 5px 4px 2px 0px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 5px 4px 2px 0px rgba(0, 0, 0, 0.25);
+  box-shadow: 5px 4px 2px 0px rgba(0, 0, 0, 0.25);
+}

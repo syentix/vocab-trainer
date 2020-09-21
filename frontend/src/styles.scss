@@ -1,0 +1,9 @@
+$primary-color: #0a828f;
+$header-color: #00b87a;
+$card-color: rgb(223, 238, 233);
+
+.shadow {
+  -webkit-box-shadow: 5px 4px 0px 0px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 5px 4px 0px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}
